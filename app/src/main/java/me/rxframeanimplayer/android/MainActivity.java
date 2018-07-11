@@ -3,44 +3,53 @@ package me.rxframeanimplayer.android;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import java.util.concurrent.TimeUnit;
 
-public class MainActivity extends AppCompatActivity {
+import butterknife.BindView;
+import butterknife.ButterKnife;
 
-    private static final int[] IMAGE_RESOURCES = {
-            R.mipmap.koala_anim_0001,
-            R.mipmap.koala_anim_0002,
-            R.mipmap.koala_anim_0003,
-            R.mipmap.koala_anim_0004,
-            R.mipmap.koala_anim_0005,
-            R.mipmap.koala_anim_0006,
-            R.mipmap.koala_anim_0007,
-            R.mipmap.koala_anim_0008};
+import static me.rxframeanimplayer.android.overscroll.IOverScrollState.STATE_BOUNCE_BACK;
+import static me.rxframeanimplayer.android.overscroll.IOverScrollState.STATE_IDLE;
 
-    RxFrameAnimPlayer rxFrameAnimPlayer;
+public class MainActivity extends AppCompatActivity implements ReboundRecyclerView.OnReboundListener, KoalaClimbTreeView.OnKoalaClimbTreeListener {
+
+    @BindView(R.id.reboundScrollLayout)
+    ReboundRecyclerView reboundRecyclerView;
+    @BindView(R.id.koala_climb_tree)
+    KoalaClimbTreeView koalaClimbTreeView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        ImageView imageView = findViewById(R.id.imageView);
-
-
-        rxFrameAnimPlayer = RxFrameAnimPlayer.with(imageView)
-                .frames(IMAGE_RESOURCES)
-                .listener(((run, position) -> {}))
-                .performInterval(130, TimeUnit.MILLISECONDS)
-                .start();
-
-        imageView.setOnClickListener(v -> {
-            if(rxFrameAnimPlayer.isRunning()){
-                rxFrameAnimPlayer.pause();
-            }else {
-                rxFrameAnimPlayer.start();
-            }
-        });
+        ButterKnife.bind(this);
+        reboundRecyclerView.setOnReboundListener(this);
+        koalaClimbTreeView.setOnKoalaClimbTreeListener(this);
+        ReboundAdapter reboundAdapter = new ReboundAdapter();
+        reboundRecyclerView.setAdapter(reboundAdapter);
     }
 
+    @Override
+    public void onReboundTouchingOverStat(int stat) {
+        if (stat == STATE_BOUNCE_BACK || stat == STATE_IDLE)
+            koalaClimbTreeView.reset();
+    }
+
+    @Override
+    public void onReboundTouchingOffset(boolean touchingIdle, int offset) {
+        koalaClimbTreeView.startKoalaClimbTreeAnim(touchingIdle, offset, reboundRecyclerView.getOverScrollEffect().getCurrentState());
+    }
+
+    private boolean hasClimbTrigger;
+    @Override
+    public void onKoalaClimbStat(int status) {
+        if (status == KoalaClimbTreeView.CLIMB_STAT_ARRIVE && !hasClimbTrigger) {
+            hasClimbTrigger = true;
+            Toast.makeText(this, "release all frame anim~", Toast.LENGTH_SHORT).show();
+        }
+    }
 }

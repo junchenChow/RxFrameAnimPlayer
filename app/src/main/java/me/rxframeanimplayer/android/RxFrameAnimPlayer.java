@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 import io.reactivex.Flowable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 
 
 /**
@@ -22,26 +23,29 @@ import io.reactivex.disposables.Disposable;
 public class RxFrameAnimPlayer {
     public static final String TAG = "RxFrameAnimator";
 
-
-    private List<AnimationFrame> mAnimationFrames;
+    private static final long DEFAULT_PERIOD = 130;
+    private static final TimeUnit DEFAULT_UNIT = TimeUnit.MILLISECONDS;
 
     private int mPosition;
-    private boolean mPause;
     private boolean mOneShot;
+    private boolean mPause = true;
+
+    private ImageView mImageView;
+    private Disposable mDisposable;
+    private FrameAnimListener frameAnimListener;
 
     private Bitmap mRecycleBitmap;
-
-    private ImageView imageView;
-    private Disposable mDisposable;
-
-    private FrameAnimListener frameAnimListener;
+    private List<AnimationFrame> mAnimationFrames;
 
     public interface FrameAnimListener {
         void onAnimRunning(boolean running, int position);
     }
 
     private RxFrameAnimPlayer(ImageView view) {
-        imageView = view;
+        mImageView = view;
+    }
+
+    public RxFrameAnimPlayer() {
     }
 
     public static RxFrameAnimPlayer with(ImageView imageView) {
@@ -84,7 +88,7 @@ public class RxFrameAnimPlayer {
         if (mDisposable != null && !mDisposable.isDisposed())
             mDisposable.dispose();
         if (mAnimationFrames == null || mAnimationFrames.size() == 0) {
-            Log.e(TAG, "not found mPngData！！");
+            Log.e(TAG, "not found mAnimationFrames！！");
             return this;
         }
 
@@ -95,19 +99,19 @@ public class RxFrameAnimPlayer {
                     AnimationFrame frameData = getNext();
                     decodeBitmap(frameData.getResourceId());
                     mPosition++;
-                    return new BitmapDrawable(imageView.getResources(), mRecycleBitmap);
+                    return new BitmapDrawable(mImageView.getResources(), mRecycleBitmap);
                 })
                 .onBackpressureDrop()
                 .filter(bitmapDrawable -> null != bitmapDrawable)
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnNext(bitmapDrawable -> imageView.setImageDrawable(bitmapDrawable))
+                .doOnNext(bitmapDrawable -> mImageView.setImageDrawable(bitmapDrawable))
                 .subscribe();
         return this;
     }
 
     private boolean checkRunning() {
-        boolean run = !mPause && imageView.isShown();
-        if(frameAnimListener!=null)
+        boolean run = !mPause && mImageView.isShown();
+        if (frameAnimListener != null)
             frameAnimListener.onAnimRunning(run, mPosition);
         return run;
     }
@@ -118,7 +122,12 @@ public class RxFrameAnimPlayer {
         if (mRecycleBitmap != null)
             options.inBitmap = mRecycleBitmap;
         options.inPreferredConfig = Bitmap.Config.RGB_565;
-        mRecycleBitmap = BitmapFactory.decodeResource(imageView.getResources(), resId, options);
+        mRecycleBitmap = BitmapFactory.decodeResource(mImageView.getResources(), resId, options);
+    }
+
+    public void performStart() {
+        performInterval(DEFAULT_PERIOD, DEFAULT_UNIT);
+        start();
     }
 
     public void pause() {
@@ -135,7 +144,16 @@ public class RxFrameAnimPlayer {
      */
     public void stop() {
         if (isRunning()) {
+            reset();
             mDisposable.dispose();
+        }
+    }
+
+    public void reset() {
+        if (mAnimationFrames != null && mAnimationFrames.size() > 0) {
+            pause();
+            decodeBitmap(mAnimationFrames.get(0).getResourceId());
+            mImageView.setImageDrawable(new BitmapDrawable(mImageView.getResources(), mRecycleBitmap));
         }
     }
 
@@ -146,8 +164,8 @@ public class RxFrameAnimPlayer {
     public void destroy() {
         stop();
         mDisposable = null;
-        imageView.setImageBitmap(null);
-        imageView = null;
+        mImageView.setImageBitmap(null);
+        mImageView = null;
     }
 
     private AnimationFrame getNext() {
@@ -155,7 +173,7 @@ public class RxFrameAnimPlayer {
             mPosition = 0;
             if (mOneShot) {
                 decodeBitmap(mAnimationFrames.get(mPosition).getResourceId());
-                imageView.setImageDrawable(new BitmapDrawable(imageView.getResources(), mRecycleBitmap));
+                mImageView.setImageDrawable(new BitmapDrawable(mImageView.getResources(), mRecycleBitmap));
                 stop();
             }
         }

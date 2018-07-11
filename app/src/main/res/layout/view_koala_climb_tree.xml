@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:background="@color/background_main_blue">
+
+    <ImageView
+        android:id="@+id/iv_tree_cloud"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="50dp"
+        android:contentDescription="@null"
+        android:src="@mipmap/ic_cloud" />
+
+    <ImageView
+        android:id="@+id/iv_tree_trunk"
+        android:layout_width="75dp"
+        android:layout_height="300dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginLeft="80dp"
+        android:layout_marginStart="80dp"
+        android:contentDescription="@null"
+        android:src="@mipmap/ic_tree_trunk"
+        tools:ignore="RtlHardcoded" />
+
+    <ImageView
+        android:id="@+id/ivTreeBranch"
+        android:layout_width="@dimen/koala_tree_wh"
+        android:layout_height="@dimen/koala_tree_wh"
+        android:layout_alignTop="@+id/iv_tree_trunk"
+        android:layout_marginLeft="-15dp"
+        android:layout_marginStart="-15dp"
+        android:layout_marginTop="30dp"
+        android:layout_toEndOf="@+id/iv_tree_trunk"
+        android:layout_toRightOf="@+id/iv_tree_trunk"
+        android:contentDescription="@null"
+        android:src="@mipmap/koala_tree_01" />
+
+    <ImageView
+        android:id="@+id/iv_koala"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginLeft="-40dp"
+        android:layout_marginStart="-40dp"
+        android:layout_toEndOf="@+id/iv_tree_trunk"
+        android:layout_toRightOf="@+id/iv_tree_trunk"
+        android:contentDescription="@null"
+        android:src="@mipmap/koala_anim_0001" />
+
+
+    <TextView
+        android:id="@+id/tv_koala_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="30dp"
+        android:layout_marginEnd="40dp"
+        android:layout_marginRight="40dp"
+        android:layout_marginTop="30dp"
+        android:text="继续上滑发现更多精彩"
+        android:textSize="13dp" />
+
+    <View
+        android:id="@+id/view_guide"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/iv_koala"
+        android:layout_alignEnd="@+id/iv_koala"
+        android:layout_alignLeft="@+id/iv_koala"
+        android:layout_alignRight="@+id/iv_koala"
+        android:layout_alignStart="@+id/iv_koala"
+        android:layout_alignTop="@+id/iv_koala" />
+
+</RelativeLayout>
