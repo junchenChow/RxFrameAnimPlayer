@@ -1,7 +1,6 @@
 # RxFrameAnimPlayer
-`Optimization of large frame animation without OutOfMemory`
 
-`使用了RxJava2，用很少的内存，加载大量的图片帧动画。帮助你避免出现内存错误。`
+`原理是每次切换下一帧都是转换成bitmap避免一次性加载大量图片出现内存错误。`
 
 ## Usage
 ```java
